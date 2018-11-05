@@ -51,37 +51,56 @@ void ServerEvent::ServerEvent_sendRequest()
         exit(NOT_CONNECTED);
     recv(acceptor_socket, globalBuffer, 1024, 0);
     printf("%s", globalBuffer);
+    char * localBuffer = (char *)malloc(1024);
+    bzero(localBuffer, 1024);
     if(strstr(globalBuffer, "favicon") != NULL) //favicon
     {
-
+        strcat(localBuffer, standard_error_response);
     }
-    else if(strstr(globalBuffer, "event") == NULL) //event
+    else if(strstr(globalBuffer, "event") != NULL) //event
     {
-//        bzero(buffer, 1024);
-//        FILE *in = NULL;
-//        in = fopen(initWebPage,"r");
-//        if(in == NULL)
-//            exit(COULD_NOT_OPEN_FILE);
-//        int tempCounter = 0;
-//        while((buffer[tempCounter] = fgetc(in)) != -1) tempCounter++;
-//        fclose(in);
-//        send(acceptor_socket, buffer, tempCounter, 0);
+        char * localFileReadBuffer = (char *)malloc(1024);
+        unsigned long * fileSize = (unsigned long *)malloc(sizeof(unsigned long));
+        while(1)
+        {
+            bzero(localFileReadBuffer, 1024);
+            bzero(localBuffer, 1024);
+            FILE *in = NULL;
+            in = fopen(eventFile, "r");
+            fseek(in, 0, SEEK_END);
+            *fileSize = ftell(in);
+            rewind(in);
+            fread(localFileReadBuffer, *fileSize, 1, in);
+            fclose(in);
+            strcat(localBuffer, standard_event_response);
+            strcat(localBuffer, localFileReadBuffer);
+            send(acceptor_socket, localBuffer, strlen(localBuffer), 0);
+            sleep(1);
+        }
+        free(localFileReadBuffer);
+        free(fileSize);
+
     }
     else //normal response
     {
-//        bzero(buffer, 1024);
-//        FILE *in = NULL;
-//        in = fopen(eventFile, "r");
-//        if(in == NULL)
-//            exit(COULD_NOT_OPEN_FILE);
-
-//        bzero(buffer, sizeof(buffer));
-//        int tempCounter = 0;
-//        while((buffer[tempCounter] = fgetc(in)) != -1) tempCounter++;
-//        fclose(in);
-
-//        send(acceptor_socket, buffer, tempCounter, 0);
+        char * localFileReadBuffer = (char *)malloc(1024);
+        unsigned long * fileSize = (unsigned long *)malloc(sizeof(unsigned long));
+        bzero(localFileReadBuffer, 1024);
+        FILE *in = NULL;
+        in = fopen(initWebPage, "r");
+        fseek(in, 0, SEEK_END);
+        *fileSize = ftell(in);
+        rewind(in);
+        fread(localFileReadBuffer, *fileSize, 1, in);
+        fclose(in);
+        strcat(localBuffer, standard_response);
+        strcat(localBuffer, localFileReadBuffer);
+        free(localFileReadBuffer);
+        free(fileSize);
     }
+    send(acceptor_socket, localBuffer, strlen(localBuffer), 0);
+    free(localBuffer);
+
 }
 
 
@@ -90,30 +109,4 @@ void ServerEvent::ServerEvent_closeConnection()
     shutdown(acceptor_socket, SHUT_RDWR);
     status.isConnected = 0;
     status.isListening = 1;
-}
-
-void ServerEvent::ServerEvent_private_sendOK()
-{
-    if(!status.isConnected)
-        exit(NOT_CONNECTED);
-    char * localBuffer = (char *)malloc(1024);
-    unsigned long * fileSize = (unsigned long *)malloc(sizeof(unsigned long));
-    bzero(localBuffer, 1024);
-    strcat(localBuffer, standard_response);
-    FILE *in = NULL;
-    in = fopen(initWebPage, "r");
-
-
-}
-
-void ServerEvent::ServerEvent_private_sendNOTFOUND()
-{
-    if(!status.isConnected)
-        exit(NOT_CONNECTED);
-}
-
-void ServerEvent::ServerEvent_private_sendEvent()
-{
-    if(!status.isConnected)
-        exit(NOT_CONNECTED);
 }

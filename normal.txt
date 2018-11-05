@@ -1,15 +1,11 @@
-HTTP/1.1 200 OK
-Content-type: text/html
-Connection: close
-
 <html>
 <body>
 <script>
         var source = new EventSource("/");
         source.onmessage = function(event){
-            document.getElementById("result").innerHTML = "Temp" + event.data + "<br>";
+            document.getElementById("result").innerHTML = "Temp " + event.data + "<br>";
         };
 </script>
-<h1 id="result">fuck yea</h1>
+<h1 id="result">Test Text</h1>
 </body>
 </html>

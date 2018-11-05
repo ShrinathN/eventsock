@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <pthread.h>
 
@@ -50,10 +51,6 @@ private:
         uint8_t isListening : 1;
     }status;
 
-    //private functions
-    void ServerEvent_private_sendOK();
-    void ServerEvent_private_sendNOTFOUND();
-    void ServerEvent_private_sendEvent();
 public:
     ServerEvent(uint16_t port);
     void ServerEvent_startListening();
