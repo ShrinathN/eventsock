@@ -1,12 +1,17 @@
 #include <iostream>
+#include <unistd.h>
 #include <serverevent.h>
 
 int main(int argc, char * argv[])
 {
     ServerEvent s(8080);
-    std::cout << "Listening...";
-    std::fflush(stdout);
-    s.startListening();
-    std::cout << "Connected!\n";
-    s.sendRequest(REQUEST_NORMAL);
+    s.ServerEvent_setInitWebPage("normal.txt");
+    s.ServerEvent_setEventFile("event.txt");
+    s.ServerEvent_startListening();
+    while(1)
+    {
+        s.ServerEvent_acceptConnection();
+        s.ServerEvent_sendRequest();
+        s.ServerEvent_closeConnection();
+    }
 }

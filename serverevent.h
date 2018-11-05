@@ -1,10 +1,18 @@
 #ifndef SERVEREVENT_H
 #define SERVEREVENT_H
+
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <string.h>
+#include <stdlib.h>
 #include <pthread.h>
+
+const char standard_response[] = "HTTP/1.1 200 OK\nContent-type: text/html\nConnection: close\n\n";
+const char standard_event_response[] = "HTTP/1.1 200 OK\nContent-Type: text/event-stream;charset=UTF-8\nTransfer-Encoding: identity\n\n";
+const char standard_error_response[] = "HTTP/1.1 404 Not Found\nConnection: close\n\n";
 
 enum request
 {
@@ -22,23 +30,39 @@ private:
     struct sockaddr_in serverInfo;
     struct sockaddr_in clientInfo;
 
-    char * initWebPage;
-    char * eventName;
-    char * eventFile;
+    const char * initWebPage;
+    const char * eventName;
+    const char * eventFile;
 
+    char * globalBuffer;
+
+    enum error
+    {
+        NOT_CONNECTED = 0,
+        UNABLE_TO_WRITE_TO_SOCKET,
+        COULD_NOT_OPEN_FILE
+    };
+
+    error lastError;
     struct
     {
         uint8_t isConnected : 1;
         uint8_t isListening : 1;
     }status;
 
+    //private functions
+    void ServerEvent_private_sendOK();
+    void ServerEvent_private_sendNOTFOUND();
+    void ServerEvent_private_sendEvent();
 public:
     ServerEvent(uint16_t port);
-    void startListening();
-    void setInitWebPage(char * fileName);
-    void setEventName(char * eventString);
-    void setEventFile(char * fileName);
-    void sendRequest(request req);
+    void ServerEvent_startListening();
+    void ServerEvent_setInitWebPage(const char * fileName);
+    void ServerEvent_setEventName(const char * eventString);
+    void ServerEvent_setEventFile(const char * fileName);
+    void ServerEvent_sendRequest();
+    void ServerEvent_closeConnection();
+    void ServerEvent_acceptConnection();
 };
 
 #endif // SERVEREVENT_H
